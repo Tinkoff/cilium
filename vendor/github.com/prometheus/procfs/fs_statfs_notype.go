@@ -1,10 +1,9 @@
-// Copyright The OpenTelemetry Authors
-//
+// Copyright 2018 The Prometheus Authors
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//     http://www.apache.org/licenses/LICENSE-2.0
+// http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -12,10 +11,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/*
-Package codes defines the canonical error codes used by OpenTelemetry.
+//go:build netbsd || openbsd || solaris
+// +build netbsd openbsd solaris
 
-It conforms to [the OpenTelemetry
-specification](https://github.com/open-telemetry/opentelemetry-specification/blob/v1.20.0/specification/trace/api.md#set-status).
-*/
-package codes // import "go.opentelemetry.io/otel/codes"
+package procfs
+
+// isRealProc returns true on architectures that don't have a Type argument
+// in their Statfs_t struct
+func isRealProc(mountPoint string) (bool, error) {
+	return true, nil
+}
