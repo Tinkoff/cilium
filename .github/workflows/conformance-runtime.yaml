@@ -19,9 +19,9 @@ permissions:
 env:
   check_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
   # List of Runtime tests
-  # f-<ID>-<description>: <Regex that matches the tests in the section>
+  # <description>: <Regex that matches the tests in the section>
   ###
-  f-01-agent: "RuntimeAgent|RuntimeSSHTests"
+  agent: "RuntimeAgent|RuntimeSSHTests"
   # RuntimeAgentChaos Cilium agent Checking for file-descriptor leak
   # RuntimeAgentChaos Cilium agent removing leftover Cilium interfaces
   # RuntimeAgentChaos Connectivity over restarts Checking that during restart no traffic is dropped using Egress + Ingress Traffic
@@ -56,7 +56,7 @@ env:
   # RuntimeAgentPolicies Tests EntityNone as a deny-all
   # RuntimeSSHTests Should fail when context times out
   ###
-  f-02-datapath: "RuntimeDatapathConntrackInVethModeTest|RuntimeDatapathMonitorTest"
+  datapath: "RuntimeDatapathConntrackInVethModeTest|RuntimeDatapathMonitorTest"
   # RuntimeDatapathConntrackInVethModeTest Conntrack-related configuration options for endpoints
   # RuntimeDatapathMonitorTest With Sample Containers checks container ids match monitor output
   # RuntimeDatapathMonitorTest With Sample Containers cilium monitor check --from
@@ -66,7 +66,7 @@ env:
   # RuntimeDatapathMonitorTest With Sample Containers Cilium monitor verbose mode
   # RuntimeDatapathMonitorTest With Sample Containers delivers the same information to multiple monitors
   ###
-  f-03-privileged: "RuntimeDatapathPrivilegedUnitTests"
+  privileged: "RuntimeDatapathPrivilegedUnitTests"
   # RuntimeDatapathPrivilegedUnitTests Run Tests
   ###
 
@@ -168,9 +168,9 @@ jobs:
       max-parallel: 60
       matrix:
         focus:
-          - "f-01-agent"
-          - "f-02-datapath"
-          - "f-03-privileged"
+          - "agent"
+          - "datapath"
+          - "privileged"
 
     timeout-minutes: 60
     steps:
@@ -190,14 +190,14 @@ jobs:
           echo "sha=${SHA}" >> $GITHUB_OUTPUT
 
           case ${{ matrix.focus }} in
-              f-01-agent)
-                  focus="${{ env.f-01-agent }}"
+              agent)
+                  focus="${{ env.agent }}"
                   ;;
-              f-02-datapath)
-                  focus="${{ env.f-02-datapath }}"
+              datapath)
+                  focus="${{ env.datapath }}"
                   ;;
-              f-03-privileged)
-                  focus="${{ env.f-03-privileged }}"
+              privileged)
+                  focus="${{ env.privileged }}"
                   ;;
               *)
                   echo "focus group not found!"
@@ -301,7 +301,7 @@ jobs:
             service docker restart
 
       - name: Runtime tests [junit]
-        if: ${{ matrix.focus == 'f-01-agent' || matrix.focus == 'f-02-datapath' }}
+        if: ${{ matrix.focus == 'agent' || matrix.focus == 'datapath' }}
         timeout-minutes: 20
         shell: bash
         run: |
@@ -333,7 +333,7 @@ jobs:
           -cilium.SSHConfig="cat ./cilium-ssh-config.txt"
 
       - name: Runtime privileged tests [junit]
-        if: ${{ matrix.focus == 'f-03-privileged' }}
+        if: ${{ matrix.focus == 'privileged' }}
         timeout-minutes: 20
         uses: cilium/little-vm-helper@0b7d7157dae56a44dc531c852e7756dc671071af # v0.0.3
         with:
@@ -347,13 +347,13 @@ jobs:
             make tests-privileged NO_COLOR=1
 
       - name: Fetch artifacts
-        if: ${{ !success() && (matrix.focus == 'f-01-agent' || matrix.focus == 'f-02-datapath') }}
+        if: ${{ !success() && (matrix.focus == 'agent' || matrix.focus == 'datapath') }}
         shell: bash
         run: |
           tar -zcf test_results-${{ join(matrix.*, '-') }}.tar.gz ./test/test_results
 
       - name: Upload artifacts
-        if: ${{ !success() && (matrix.focus == 'f-01-agent' || matrix.focus == 'f-02-datapath') }}
+        if: ${{ !success() && (matrix.focus == 'agent' || matrix.focus == 'datapath') }}
         uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
         with:
           name: cilium-sysdumps
