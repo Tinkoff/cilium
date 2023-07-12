@@ -108,6 +108,9 @@ func (n *linuxNodeHandler) allocateIDForNode(node *nodeTypes.Node) uint16 {
 
 // deallocateIDForNode deallocates the node ID for the given node, if it was allocated.
 func (n *linuxNodeHandler) deallocateIDForNode(oldNode *nodeTypes.Node) {
+	if len(oldNode.IPAddresses) < 1 {
+		return
+	}
 	nodeID := n.nodeIDsByIPs[oldNode.IPAddresses[0].IP.String()]
 	for _, addr := range oldNode.IPAddresses {
 		id := n.nodeIDsByIPs[addr.IP.String()]
